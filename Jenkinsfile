@@ -5,6 +5,10 @@ pipeline {
         nodejs 'NodeJS'
     }
 
+    environment {
+        COMPOSE_PROJECT_NAME = 'habit-tracker'
+    }
+
     stages {
 
         stage('Install Backend') {
@@ -39,9 +43,22 @@ pipeline {
             }
         }
 
+        stage('Build Docker Images') {
+            steps {
+                bat 'docker-compose build'
+            }
+        }
+
+        stage('Deploy Containers') {
+            steps {
+                bat 'docker-compose up -d'
+            }
+        }
+
         stage('Health Check') {
             steps {
-                bat 'node -e "const h=require(\'http\');h.get(\'http://localhost:3000/health\',r=>{console.log(\'Status:\',r.statusCode);process.exit(r.statusCode===200?0:1)})"'
+                bat 'ping -n 6 127.0.0.1 > nul'
+                bat 'curl -f http://localhost:3000/health'
             }
         }
 
@@ -49,10 +66,11 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline ejecutado correctamente'
+            echo 'Pipeline completo — app corriendo en Docker'
         }
         failure {
-            echo 'Algo fallo en el pipeline'
+            bat 'docker-compose down'
+            echo 'Pipeline fallido — contenedores detenidos'
         }
     }
 }
