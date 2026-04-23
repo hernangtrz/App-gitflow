@@ -50,10 +50,11 @@ pipeline {
         }
 
         stage('Deploy Containers') {
-            steps {
-                bat 'docker-compose up -d'
-            }
-        }
+    steps {
+        bat 'docker-compose down'
+        bat 'docker-compose up -d'
+    }
+}
 
         stage('Health Check') {
             steps {
