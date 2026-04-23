@@ -14,7 +14,12 @@ const today = () => new Date().toISOString().split("T")[0];
 
 // Health check (útil para Jenkins)
 app.get("/health", (req, res) =>
-  res.json({ status: "ok", timestamp: new Date() }),
+  res.json({
+    status: "ok",
+    timestamp: new Date(),
+    version: "2.0.0",
+    app: "habit-tracker",
+  }),
 );
 
 // Hábitos
