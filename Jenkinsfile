@@ -38,6 +38,22 @@ pipeline {
             }
         }
 
+        stage('OWASP Dependency Check') {
+            steps {
+                dependencyCheck(
+                    additionalArguments: '--scan backend/ --scan frontend/ --format HTML --format XML --out reports/',
+                    odcInstallation: 'OWASP-DC'
+                )
+            }
+            post {
+                always {
+                    dependencyCheckPublisher(
+                        pattern: 'reports/dependency-check-report.xml'
+                    )
+                }
+            }
+        }
+
         stage('Install Frontend') {
             steps {
                 dir('frontend') {
