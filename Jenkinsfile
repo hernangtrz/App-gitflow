@@ -3,11 +3,11 @@ pipeline {
 
     tools {
         nodejs 'NodeJS'
+        sonarQube 'SonarScanner'
     }
 
     environment {
         COMPOSE_PROJECT_NAME = 'habit-tracker'
-        SONAR_SCANNER_HOME = tool 'SonarScanner'
     }
 
     stages {
@@ -82,8 +82,7 @@ pipeline {
             echo 'Pipeline completo — app corriendo en Docker'
         }
         failure {
-            bat 'docker-compose down'
-            echo 'Pipeline fallido — contenedores detenidos'
+            echo 'Pipeline fallido'
         }
     }
 }
