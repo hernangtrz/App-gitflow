@@ -7,7 +7,6 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = 'habit-tracker'
-        SONAR_SCANNER_HOME = tool 'SonarScanner'
     }
 
     stages {
@@ -32,7 +31,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonarqube') {
                     dir('backend') {
-                        bat 'npx @sonar/scan --define sonar.projectKey=habit-tracker --define sonar.sources=. --define sonar.exclusions=node_modules/**,__tests__/**'
+                        bat 'npx @sonar/scan --define sonar.projectKey=habit-tracker --define sonar.sources=. --define sonar.exclusions=node_modules/**,__tests__/** --define sonar.host.url=http://localhost:9000'
                     }
                 }
             }
@@ -82,8 +81,7 @@ pipeline {
             echo 'Pipeline completo — app corriendo en Docker'
         }
         failure {
-            bat 'docker-compose down'
-            echo 'Pipeline fallido — contenedores detenidos'
+            echo 'Pipeline fallido'
         }
     }
 }
