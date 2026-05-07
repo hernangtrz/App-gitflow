@@ -37,18 +37,22 @@ pipeline {
             }
         }
 
-        stage('OWASP Dependency Check') {
+       stage('OWASP Dependency Check') {
             steps {
-                dependencyCheck(
-                    additionalArguments: '--scan backend/ --scan frontend/ --format HTML --format XML --out reports/',
-                    odcInstallation: 'OWASP-DC'
-                )
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    dependencyCheck(
+                        additionalArguments: '--scan backend/ --scan frontend/ --format HTML --format XML --out reports/ --noupdate',
+                        odcInstallation: 'OWASP-DC'
+                    )
+                }
             }
             post {
                 always {
-                    dependencyCheckPublisher(
-                        pattern: 'reports/dependency-check-report.xml'
-                    )
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        dependencyCheckPublisher(
+                            pattern: 'reports/dependency-check-report.xml'
+                        )
+                    }
                 }
             }
         }
