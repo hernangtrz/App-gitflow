@@ -31,7 +31,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonarqube') {
                     dir('backend') {
-                        bat 'npx @sonar/scan --define sonar.projectKey=habit-tracker --define sonar.sources=. --define sonar.exclusions=node_modules/**,__tests__/**'
+                        bat 'npx @sonar/scan --define sonar.projectKey=habit-tracker --define sonar.sources=. --define sonar.exclusions=node_modules/**,__tests__/** --define sonar.host.url=http://localhost:9000'
                     }
                 }
             }
