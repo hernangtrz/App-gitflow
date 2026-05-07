@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = 'habit-tracker'
+        SONAR_SCANNER_HOME = tool 'SonarScanner'
     }
 
     stages {
@@ -23,6 +24,16 @@ pipeline {
             steps {
                 dir('backend') {
                     bat 'npm test'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    dir('backend') {
+                        bat 'npx @sonar/scan --define sonar.projectKey=habit-tracker --define sonar.sources=. --define sonar.exclusions=node_modules/**,__tests__/**'
+                    }
                 }
             }
         }
@@ -51,7 +62,8 @@ pipeline {
 
         stage('Deploy Containers') {
             steps {
-                bat 'docker-compose down'
+                bat 'docker rm -f habit-backend habit-frontend || exit 0'
+                bat 'docker-compose down --remove-orphans'
                 bat 'docker-compose up -d'
             }
         }
