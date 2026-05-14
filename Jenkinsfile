@@ -41,7 +41,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     dependencyCheck(
-                        additionalArguments: '--scan backend/ --scan frontend/ --format HTML --format XML --out reports/ --noupdate',
+                        additionalArguments: '--scan backend/ --scan frontend/ --format HTML --format XML --out reports/ --enableAutoUpdate',
                         odcInstallation: 'OWASP-DC'
                     )
                 }
