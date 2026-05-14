@@ -54,14 +54,21 @@ pipeline {
             }
         }
 
-        stage('Security Audit') {
+        stage('OWASP Dependency Check') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    dir('backend') {
-                        bat 'npm audit --audit-level=moderate || exit 0'
-                    }
-                    dir('frontend') {
-                        bat 'npm audit --audit-level=moderate || exit 0'
+                    dependencyCheck(
+                        additionalArguments: '--scan backend/ --scan frontend/ --format HTML --format XML --out reports/ --project habit-tracker --nvdApiKey 0705f9e1-c6ba-4673-8f94-d1f971016cbd',
+                        odcInstallation: 'OWASP-DC'
+                    )
+                }
+            }
+            post {
+                always {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        dependencyCheckPublisher(
+                            pattern: 'reports/dependency-check-report.xml'
+                        )
                     }
                 }
             }
