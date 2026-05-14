@@ -23,7 +23,7 @@ pipeline {
         stage('Test Backend') {
             steps {
                 dir('backend') {
-                    bat 'npm test'
+                    bat 'npm run test:coverage'
                 }
             }
         }
@@ -48,7 +48,20 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonarqube') {
                     dir('backend') {
-                        bat 'npx @sonar/scan --define sonar.projectKey=habit-tracker --define sonar.sources=. --define sonar.exclusions=node_modules/**,__tests__/** --define sonar.host.url=http://localhost:9000'
+                        bat 'npx @sonar/scan --define sonar.projectKey=habit-tracker --define sonar.sources=. --define sonar.exclusions=node_modules/**,__tests__/**,coverage/** --define sonar.javascript.lcov.reportPaths=coverage/lcov.info --define sonar.host.url=http://localhost:9000'
+                    }
+                }
+            }
+        }
+
+        stage('Security Audit') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    dir('backend') {
+                        bat 'npm audit --audit-level=moderate || exit 0'
+                    }
+                    dir('frontend') {
+                        bat 'npm audit --audit-level=moderate || exit 0'
                     }
                 }
             }
@@ -58,7 +71,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     dependencyCheck(
-                        additionalArguments: '--scan backend/ --scan frontend/ --format HTML --format XML --out reports/ --project habit-tracker --nvdApiKey 0705f9e1-c6ba-4673-8f94-d1f971016cbd',
+                        additionalArguments: '--scan backend/ --scan frontend/ --format HTML --format XML --out reports/ --project habit-tracker',
                         odcInstallation: 'OWASP-DC'
                     )
                 }
