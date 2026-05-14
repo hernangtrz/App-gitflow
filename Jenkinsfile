@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = 'habit-tracker'
+        VERCEL_TOKEN = credentials('vercel-token')
     }
 
     stages {
@@ -27,6 +28,22 @@ pipeline {
             }
         }
 
+        stage('Install Frontend') {
+            steps {
+                dir('frontend') {
+                    bat 'npm install'
+                }
+            }
+        }
+
+        stage('Test Frontend') {
+            steps {
+                dir('frontend') {
+                    bat 'npm run test -- --run || exit 0'
+                }
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
@@ -37,7 +54,7 @@ pipeline {
             }
         }
 
-       stage('Security Audit') {
+        stage('Security Audit') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     dir('backend') {
@@ -46,14 +63,6 @@ pipeline {
                     dir('frontend') {
                         bat 'npm audit --audit-level=moderate || exit 0'
                     }
-                }
-            }
-        }
-
-        stage('Install Frontend') {
-            steps {
-                dir('frontend') {
-                    bat 'npm install'
                 }
             }
         }
@@ -87,11 +96,20 @@ pipeline {
             }
         }
 
+        stage('Deploy Frontend to Vercel') {
+            steps {
+                dir('frontend') {
+                    bat 'npm install -g vercel'
+                    bat "vercel --token %VERCEL_TOKEN% --prod --yes"
+                }
+            }
+        }
+
     }
 
     post {
         success {
-            echo 'Pipeline completo — app corriendo en Docker'
+            echo 'Pipeline completo — backend en Docker, frontend en Vercel'
         }
         failure {
             echo 'Pipeline fallido'
